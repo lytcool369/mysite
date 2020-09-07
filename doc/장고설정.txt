@@ -1,0 +1,119 @@
+[mysite db 만들기]
+
+1. # mysql -r root -p
+2. MariaDB [(none)]> create database mysite;
+3. MariaDB [(none)]> create user 'mysite'@'192.168.%.%' identified by 'mysite'
+4. MariaDB [(none)]> grant all privileges on mysite.* to 'mysite'@'192.168.%.%';
+5. flush privileges
+6. workbench 에서 접속 테스트
+
+
+
+
+================================================================================================================
+
+[장고 프로젝트(mysite) 만들기]
+
+
+1. PyCharm에서 python_ch3 프로젝트 만들기
+
+
+2. Django 설치
+   Terminal> pip3 install django
+
+
+3. mysqlclient 설치
+   Terminal> pip install mysqlclient
+
+
+4. 장고 프로젝트 생성
+   Terminal> django-admin startproject mysite
+
+
+5. 디렉토리 정리
+
+
+6. settings.py 설정
+
+    1) LANGUAGE_CODE = 'ko-kr'
+       TIME_ZONE = 'Asia/Seoul'
+
+    2) DATABASES = {
+    	'default': {
+ 	        'ENGINE': 'django.db.backends.mysql',
+        	'NAME': 'mysite',
+        	'USER': 'mysite',
+        	'PASSWORD': 'mysite',
+        	'HOST': '192.168.1.137',
+        	'PORT': 3307
+    	}
+	}
+
+
+7. 기본적으로 장고 프로젝트가 관리하는 테이블을 생성
+   Terminal> python manage.py migrate
+
+
+8. 장고 프로젝트 관리 애플리케이션의 관리자 계정 생성하기
+   Terminal> python manage.py createsuperuser
+
+
+9. Application 들의 통합 templates 디렉토리 만들기
+  1) django_practices(프로젝트 루트)
+     I---- templates
+  2) settings.py 에 설정 작업
+     TEMPLATES 의 DIRS 변수에 세팅
+     -> 'DIRS': [os.path.join(BASE_DIR, 'templates')]
+
+
+10. /assets/** URL을 --> /statics/** 경로로 매핑 (settings.py)
+    STATICFILES_DIRS = (
+        os.path.join(BASE_DIR, 'statics'),
+    )
+    STATIC_URL = '/assets/'
+
+
+11. 리스트 번호를 붙이기 위해 라이브러리 설치
+    Terminal> pip install django-mathfilters
+    (html 최상단) -> {% load mathfilters %}
+    ex -> {{ guestlist | length | sub:forloop.counter | add:1 }}
+
+
+12. 지금까지의 작업 내용 확인하기
+  1) 서버 시작하기
+     Terminal> python manage.py runserver 0.0.0.0:7777(포트 선택)
+  2) 브라우저에서
+     http://127.0.0.1:7777 로 접근
+
+
+
+
+================================================================================================================
+
+[장고 프로젝트의 Application 만들기]
+
+
+mysite <----> mysite(DB)
+  |---- main        (with 강사)
+  |---- guestbook   (과제)
+  |---- user        (with 강사)
+  |---- borad       (평가)
+
+
+1. main Application 만들기
+  1) Terminal> python manage.py startapp main
+  2) templates/helloworld 디렉토리 생성
+  3) Application 등록
+     settings.py 의 INSTALLLED_APPS 에 추가한다.
+     -> 'main',
+  4) /main url mapping (urls.py)
+     -> import main.views as main_views
+        ...
+        urlpatterns = [
+            path('main/', main_views.main),
+  5) view 함수에서 template에 data 전달 및 render 결과 반환
+
+
+2. 위 항목 반복
+
+
