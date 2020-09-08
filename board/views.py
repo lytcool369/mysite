@@ -4,15 +4,30 @@ import board.models as boardModel
 
 
 def index(request):
-    results = boardModel.fetchall()
-    data = {'boardlist': results}
+    page = request.GET['page']
+    results = boardModel.fetchall(page)
+    data = {'boardlist': results, 'page': page}
 
     return render(request, 'board/index.html', data)
+
+
+def writeform(request):
+
+    return render(request, 'board/writeform.html')
+
+
+def write(request):
+    title = request.POST['title']
+    content = request.POST['content']
+    boardModel.insert(title, content)
+
+    return HttpResponseRedirect('/board?page=1')
 
 
 def view(request):
     no = request.GET['no']
     result = boardModel.fetchone(no)
+    boardModel.hit(no)
     data = {'view': result}
 
     return render(request, 'board/view.html', data)
@@ -38,5 +53,9 @@ def modify(request):
     return render(request, 'board/view.html', data)
 
 
-def write(request):
-    return render(request, 'board/write.html')
+def delete(request):
+    no = request.GET['no']
+
+    boardModel.delete(no)
+
+    return HttpResponseRedirect('/board?page=1')

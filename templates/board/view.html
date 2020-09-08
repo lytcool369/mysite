@@ -24,7 +24,7 @@
 			</tr>
 		</table>
 		<div class="bottom">
-			<a href="/board">글목록</a>
+			<a href="/board?page=1">글목록</a>
 			{% if request.session.authuser.no == view.user_no %}
 				<a href="/board/modifyform?no={{ view.board_no }}">글수정</a>
 			{% endif %}

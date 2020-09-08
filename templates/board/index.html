@@ -33,7 +33,7 @@
 					<td>{{ board.name }}</td>
 					<td>{{ board.hit }}</td>
 					<td>{{ board.reg_date }}</td>
-					<td><a href="" class="del">삭제</a></td>
+					<td><a href="/board/delete?no={{ board.no }}" class="del">삭제</a></td>
 				</tr>
 			{% endfor %}
 		</table>
@@ -41,19 +41,21 @@
 		<!-- pager 추가 -->
 		<div class="pager">
 			<ul>
-				<li><a href="">◀</a></li>
-				<li><a href="">1</a></li>
-				<li class="selected">2</li>
-				<li><a href="">3</a></li>
-				<li>4</li>
-				<li>5</li>
-				<li><a href="">▶</a></li>
+				{% for p in range(1, 5) %}
+					<li><a href="">◀</a></li>
+					<li><a href="">{{ p }}</a></li>
+					<li class="selected">{{ p }}</li>
+					<li><a href="">{{ p }}</a></li>
+					<li>{{ p }}</li>
+					<li>{{ p }}</li>
+					<li><a href="">▶</a></li>
+				{% endfor %}
 			</ul>
 		</div>
 		<!-- pager 추가 -->
 		<div class="bottom">
 			{% if request.session.authuser != None %}
-				<a href="/board/write" id="new-book">글쓰기</a>
+				<a href="/board/writeform" id="new-book">글쓰기</a>
 			{% else %}
 				<a href="/user/loginform" id="new-book">글쓰기</a>
 			{% endif %}
