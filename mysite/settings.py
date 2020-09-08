@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'main',
     'guestbook',
     'user',
+    'board',
 ]
 
 MIDDLEWARE = [

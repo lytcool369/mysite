@@ -3,10 +3,10 @@ from django.shortcuts import render
 import guestbook.models as guestbookModel
 
 
-def list(request):
+def index(request):
     results = guestbookModel.list()
     data = {'guestlist': results}
-    return render(request, 'guestbook/list.html', data)
+    return render(request, 'guestbook/index.html', data)
 
 
 def insert(request):
