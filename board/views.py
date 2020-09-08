@@ -1,3 +1,4 @@
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 import board.models as boardModel
 
@@ -10,11 +11,31 @@ def index(request):
 
 
 def view(request):
-    return render(request, 'board/view.html')
+    no = request.GET['no']
+    result = boardModel.fetchone(no)
+    data = {'view': result}
+
+    return render(request, 'board/view.html', data)
+
+
+def modifyform(request):
+    no = request.GET['no']
+    result = boardModel.fetchone(no)
+    data = {'mf_view': result}
+
+    return render(request, 'board/modifyform.html', data)
 
 
 def modify(request):
-    return render(request, 'board/modify.html')
+    no = request.POST['no']
+    title = request.POST['title']
+    content = request.POST['content']
+
+    boardModel.modify(title, content, no)
+    result = boardModel.fetchone(no)
+    data = {'view': result}
+
+    return render(request, 'board/view.html', data)
 
 
 def write(request):

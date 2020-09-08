@@ -19,15 +19,20 @@
 				<th>작성일</th>
 				<th>&nbsp;</th>
 			</tr>
+			{% load mathfilters %}
 			{% for board in boardlist %}
 				<tr>
-					<td>1</td>
-					<td style="text-align:left; padding-left:20px"> "{ depth | sub:1 | mul:20 }"
-						<a href="/board/view"><img src="/assets/images/reply.png">첫 번째 글입니다.</a>
+					<td>{{ boardlist | length | sub:forloop.counter | add:1 }}</td>
+					<td style="text-align:left; padding-left:{{ board.depth | sub:1 | mul:20 }}px">
+						{% if board.depth >= 2 %}
+							<a href="/board/view?no={{ board.no }}"><img src="/assets/images/reply.png">{{ board.title }}</a>
+						{% else %}
+							<a href="/board/view?no={{ board.no }}">{{ board.title }}</a>
+						{% endif %}
 					</td>
-					<td>안대혁</td>
-					<td>3</td>
-					<td>2015-09-25 07:24:32</td>
+					<td>{{ board.name }}</td>
+					<td>{{ board.hit }}</td>
+					<td>{{ board.reg_date }}</td>
 					<td><a href="" class="del">삭제</a></td>
 				</tr>
 			{% endfor %}
