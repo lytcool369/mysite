@@ -1,6 +1,62 @@
+import math
+
 from MySQLdb import connect
 from MySQLdb.cursors import DictCursor
 from django.db import models
+
+
+def paging(page):
+    paging = []
+    pcontrol = {}
+    db = conn()
+    cursor = db.cursor(DictCursor)
+
+    sql = 'select count(no) as count from board'
+    cursor.execute(sql)
+    result = cursor.fetchone()
+
+    cursor.close()
+    db.close()
+
+    count = result['count']
+    max_page = math.ceil(count / 5)
+
+    # 출력될 페이지 수
+    if max_page <= 5:
+        for p in range(1, max_page + 1):
+            paging.append(p)
+    elif page <= 3 and max_page > 5:
+        paging = [1, 2, 3, 4, 5]
+    elif max_page - page >= 2:
+        for p in range(page - 2, page + 3):
+            paging.append(p)
+    else:
+        for p in range(max_page - 4, max_page + 1):
+            paging.append(p)
+
+    # > 표시의 조건식
+    if max_page >= 6 and max_page - page >= 3:
+        if max_page - page >= 6:
+            pcontrol['next_p'] = page + 5
+        else:
+            pcontrol['next_p'] = max_page
+        pcontrol['next_view'] = 'on'
+    else:
+        pcontrol['next_view'] = 'off'
+
+    # < 표시의 조건식
+    if page >= 4:
+        if page - 5 <= 0:
+            pcontrol['prev_p'] = 1
+        else:
+            pcontrol['prev_p'] = page - 5
+        pcontrol['prev_view'] = 'on'
+    else:
+        pcontrol['prev_view'] = 'off'
+
+    results = {'paging': paging, 'pcontrol': pcontrol}
+
+    return results
 
 
 def fetchall(page):

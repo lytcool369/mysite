@@ -4,9 +4,13 @@ import board.models as boardModel
 
 
 def index(request):
-    page = request.GET['page']
-    results = boardModel.fetchall(page)
-    data = {'boardlist': results, 'page': page}
+    page = int(request.GET['page'])
+
+    results_list = boardModel.fetchall(page)
+    results_paging = boardModel.paging(page)
+    paging = results_paging['paging']
+    pcontrol = results_paging['pcontrol']
+    data = {'boardlist': results_list, 'paging': paging, 'page': page, 'pcontrol': pcontrol}
 
     return render(request, 'board/index.html', data)
 

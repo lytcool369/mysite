@@ -41,15 +41,19 @@
 		<!-- pager 추가 -->
 		<div class="pager">
 			<ul>
-				{% for p in range(1, 5) %}
-					<li><a href="">◀</a></li>
-					<li><a href="">{{ p }}</a></li>
-					<li class="selected">{{ p }}</li>
-					<li><a href="">{{ p }}</a></li>
-					<li>{{ p }}</li>
-					<li>{{ p }}</li>
-					<li><a href="">▶</a></li>
+				{% if pcontrol.prev_view == 'on' %}
+					<li><a href="/board?page={{ pcontrol.prev_p }}">◀</a></li>
+				{% endif %}
+				{% for p in paging %}
+					{% if p == page %}
+						<li class="selected">{{ p }}</li>
+					{% else %}
+						<li><a href="/board?page={{ p }}">{{ p }}</a></li>
+					{% endif %}
 				{% endfor %}
+				{% if pcontrol.next_view == 'on' %}
+					<li><a href="/board?page={{ pcontrol.next_p }}">▶</a></li>
+				{% endif %}
 			</ul>
 		</div>
 		<!-- pager 추가 -->
