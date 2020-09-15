@@ -68,7 +68,7 @@ def fetchall(page):
         select b.no, b.title, b.content, b.hit, b.reg_date, b.g_no, b.o_no, b.depth, u.name
         from board as b, user as u
         where b.user_no = u.no
-        order by g_no desc, o_no asc
+        order by g_no desc, o_no asc, depth asc
         limit %s, 5
     '''
     cursor.execute(sql, (start,))
@@ -80,17 +80,17 @@ def fetchall(page):
     return results
 
 
-def fetchone(no):
+def fetchone(board_no):
     db = conn()
     cursor = db.cursor(DictCursor)
 
     sql = '''
-        select b.no as board_no, b.title, b.content, u.no as user_no
+        select b.no as board_no, b.title, b.content, b.g_no, b.o_no, b.depth, u.no as user_no
         from board as b, user as u
         where b.user_no = u.no
-        and b.no=%s
+        and b.no = %s
     '''
-    cursor.execute(sql, (no,))
+    cursor.execute(sql, (board_no,))
     result = cursor.fetchone()
 
     cursor.close()
@@ -99,38 +99,114 @@ def fetchone(no):
     return result
 
 
-def hit(no):
+def hit(board_no):
     db = conn()
     cursor = db.cursor()
 
-    sql = 'update board set hit=hit+1 where no=%s'
-    cursor.execute(sql, (no,))
+    sql = 'update board set hit = hit + 1 where no = %s'
+    cursor.execute(sql, (board_no,))
     db.commit()
 
     cursor.close()
     db.close()
 
 
-def insert(title, content):
+def insert_write(title, content, user_no):
     db = conn()
     cursor = db.cursor()
 
-    sql = '''insert into board values(null, %s, %s, 1, 
-                                    ifnull((select max(g_no) from board as b), 0) + 1, 
-                                    1, 1, now(), 1)
+    sql = '''
+        insert into board values(null, %s, %s, 1, 
+                                ifnull((select max(g_no) from board as b), 0) + 1, 
+                                1, 1, now(), %s)
     '''
-    cursor.execute(sql, (title, content))
+    cursor.execute(sql, (title, content, user_no))
     db.commit()
 
     cursor.close()
     db.close()
+
+
+
+
+
+
+
+
+
+# def update_replay(boardlist, board_no):
+#     board_point = dict()
+#     o_no =
+#
+#     for board in boardlist:
+#         if (board_no == board['no']):
+#             point_board = board
+#         if point_board['o_no']
+#
+#
+#     db = conn()
+#     cursor = db.cursor()
+#
+#     sql = '''
+#         update board
+#         set o_no = o_no + 1
+#         where g_no = 1 and o_no >= if((select o_no
+#                                        from board
+#                                        where g_no = %s
+#                                        and o_no = %s + 1
+#                                        and depth = %s + 1),
+#                                       (select o_no),
+#                                       o_no + 1)
+#     '''
+#     cursor.execute(sql, (g_no, depth))
+#     db.commit()
+#
+#     cursor.close()
+#     db.close()
+
+
+def insert_replay(title, content, g_no, o_no, depth, user_no):
+    db = conn()
+    cursor = db.cursor()
+
+    sql = '''
+        insert into board values(null, %s, %s, 1, %s,
+                                 ifnull((select max(o_no) + 1 as o_no 
+                                         from board as b 
+                                         where g_no = %s 
+                                         and o_no = %s + 1 
+                                         and depth = %s + 1), %s + 1), 
+                                 %s + 1, now(), %s)
+    '''
+    cursor.execute(sql, (title, content, g_no, g_no, o_no, depth, o_no, depth, user_no))
+    db.commit()
+
+    cursor.close()
+    db.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def modify(title, content, no):
     db = conn()
     cursor = db.cursor()
 
-    sql = 'update board set title=%s, content=%s where no=%s'
+    sql = '''
+        update board set title = %s, content = %s
+        where no = %s
+    '''
     cursor.execute(sql, (title, content, no))
     db.commit()
 
@@ -142,7 +218,7 @@ def delete(no):
     db = conn()
     cursor = db.cursor()
 
-    sql = 'delete from board where no=%s'
+    sql = 'delete from board where no = %s'
     cursor.execute(sql, (no,))
     db.commit()
 

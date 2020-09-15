@@ -28,6 +28,11 @@
 			{% if request.session.authuser.no == view.user_no %}
 				<a href="/board/modifyform?no={{ view.board_no }}">글수정</a>
 			{% endif %}
+			{% if request.session.authuser != None %}
+				<a href="/board/replayform?no={{ view.board_no }}" id="new-book">답글</a>
+			{% else %}
+				<a href="/user/loginform" id="new-book">답글</a>
+			{% endif %}
 		</div>
 	</div>
 {% endblock %}

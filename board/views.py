@@ -21,17 +21,39 @@ def writeform(request):
 
 
 def write(request):
+    user_no = request.session['authuser']['no']
     title = request.POST['title']
     content = request.POST['content']
-    boardModel.insert(title, content)
+
+    boardModel.insert_write(title, content, user_no)
+
+    return HttpResponseRedirect('/board?page=1')
+
+
+def replayform(request):
+    result = request.GET['no']
+    data = {'no': result}
+
+    return render(request, 'board/replayform.html', data)
+
+
+def replay(request):
+    user_no = request.session['authuser']['no']
+    board_no = request.POST['no']
+    title = request.POST['title']
+    content = request.POST['content']
+
+    board = boardModel.fetchone(board_no)
+    # boardModel.update_replay(board_no, boardlist)
+    # boardModel.insert_replay(title, content, g_no, o_no, depth, user_no)
 
     return HttpResponseRedirect('/board?page=1')
 
 
 def view(request):
-    no = request.GET['no']
-    result = boardModel.fetchone(no)
-    boardModel.hit(no)
+    board_no = request.GET['no']
+    result = boardModel.fetchone(board_no)
+    boardModel.hit(board_no)
     data = {'view': result}
 
     return render(request, 'board/view.html', data)
