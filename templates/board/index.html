@@ -24,16 +24,29 @@
 				<tr>
 					<td>{{ boardlist | length | sub:forloop.counter | add:1 }}</td>
 					<td style="text-align:left; padding-left:{{ board.depth | sub:1 | mul:20 }}px">
-						{% if board.depth >= 2 %}
+						{% if board.del == 1 %}
+							삭제된 게시물입니다.
+						{% elif board.depth >= 2 %}
 							<a href="/board/view?page={{ page }}&no={{ board.no }}"><img src="/assets/images/reply.png">{{ board.title }}</a>
 						{% else %}
 							<a href="/board/view?page={{ page }}&no={{ board.no }}">{{ board.title }}</a>
 						{% endif %}
 					</td>
-					<td>{{ board.name }}</td>
-					<td>{{ board.hit }}</td>
-					<td>{{ board.reg_date }}</td>
-					<td><a href="/board/delete?page={{ page }}&board_cnt={{ boardlist | length }}&no={{ board.no }}" class="del">삭제</a></td>
+					{% if board.del == 1 %}
+						<td>-</td>
+						<td>-</td>
+						<td>-</td>
+						<td>-</td>
+					{% else %}
+						<td>{{ board.name }}</td>
+						<td>{{ board.hit }}</td>
+						<td>{{ board.reg_date }}</td>
+						{% if request.session.authuser.no == board.user_no %}
+							<td><a href="/board/delete?page={{ page }}&board_cnt={{ boardlist | length }}&no={{ board.no }}" class="del">삭제</a></td>
+						{% else %}
+							<td>-</td>
+						{% endif %}
+					{% endif %}
 				</tr>
 			{% endfor %}
 		</table>

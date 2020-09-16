@@ -31,36 +31,33 @@ def write(request):
 
 
 def replayform(request):
-    result = request.GET['no']
-    data = {'no': result}
+    board_no = request.GET['no']
+    page = request.GET['page']
+    data = {'board_no': board_no, 'page': page}
 
     return render(request, 'board/replayform.html', data)
 
 
 def replay(request):
     user_no = request.session['authuser']['no']
-    board_no = request.POST['no']
+    board_no = request.POST['board_no']
     title = request.POST['title']
     content = request.POST['content']
+    page = request.POST['page']
 
     board = boardModel.fetchone(board_no)
+    boardModel.replay(board_no, title, content, board, user_no)
 
-    g_no = board['g_no']
-    o_no = board['o_no']
-    depth = board['depth']
-    cmt_cnt = board['cmt_cnt']
-
-    boardModel.replay(board_no, title, content, g_no, o_no, depth, cmt_cnt, user_no)
-
-    return HttpResponseRedirect('/board?page=1')
+    return HttpResponseRedirect(f'/board?page={page}')
 
 
 def view(request):
-    page = int(request.GET['page'])
+    page = request.GET['page']
     board_no = request.GET['no']
+
     result = boardModel.fetchone(board_no)
     boardModel.hit(board_no)
-    data = {'view': result}
+    data = {'view': result, 'page': page}
 
     return render(request, 'board/view.html', data)
 
@@ -90,12 +87,8 @@ def delete(request):
     board_cnt = int(request.GET['board_cnt'])
     board_no = request.GET['no']
 
-    result = boardModel.fetchone(board_no)
-    g_no = result['g_no']
-    o_no = result['o_no']
-    depth = result['depth']
-
-    boardModel.delete(board_no, g_no, o_no, depth)
+    board = boardModel.fetchone(board_no)
+    boardModel.delete(board_no, board)
 
     if board_cnt == 1 and page > 1:
         return HttpResponseRedirect(f'/board?page={page - 1}')

@@ -8,7 +8,8 @@
 	<div id="board">
 		<form class="board-form" method="post" action="/board/replay">
 			{% csrf_token %}
-			<input type="hidden" name="no" value="{{ no }}">
+			<input type="hidden" name="board_no" value="{{ board_no }}">
+			<input type="hidden" name="page" value="{{ page }}">
 			<table class="tbl-ex">
 				<tr>
 					<th colspan="2">글쓰기</th>

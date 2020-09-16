@@ -65,7 +65,7 @@ def fetchall(page):
     start = (int(page)-1)*5
 
     sql = '''
-        select b.no, b.title, b.content, b.hit, b.reg_date, b.g_no, b.o_no, b.depth, u.name
+        select b.no, b.title, b.content, b.hit, b.reg_date, b.g_no, b.o_no, b.depth, b.del, u.no as user_no, u.name
         from board as b, user as u
         where b.user_no = u.no
         order by g_no desc, o_no asc, depth asc
@@ -118,7 +118,7 @@ def insert_write(title, content, user_no):
     sql = '''
         insert into board values(null, %s, %s, 1, 
                                 ifnull((select max(g_no) from board as b), 0) + 1, 
-                                1, 1, 0, now(), %s)
+                                1, 1, 0, now(), 0, %s)
     '''
     cursor.execute(sql, (title, content, user_no))
     db.commit()
@@ -127,7 +127,12 @@ def insert_write(title, content, user_no):
     db.close()
 
 
-def replay(board_no, title, content, g_no, o_no, depth, cmt_cnt, user_no):
+def replay(board_no, title, content, board, user_no):
+    g_no = board['g_no']
+    o_no = board['o_no']
+    depth = board['depth']
+    cmt_cnt = board['cmt_cnt']
+
     db = conn()
     cursor1 = db.cursor()
     cursor2 = db.cursor()
@@ -148,7 +153,7 @@ def replay(board_no, title, content, g_no, o_no, depth, cmt_cnt, user_no):
     cursor2.execute(sql2, (board_no,))
 
     sql3 = '''
-            insert into board values(null, %s, %s, 1, %s, %s, %s, 0, now(), %s)
+            insert into board values(null, %s, %s, 1, %s, %s, %s, 0, now(), 0, %s)
         '''
     cursor3.execute(sql3, (title, content, g_no, o_no + cmt_cnt + 1, depth + 1, user_no))
 
@@ -175,40 +180,61 @@ def modify(title, content, board_no):
     db.close()
 
 
-def delete(board_no, g_no, o_no, depth):
+def delete(board_no, board):
+    g_no = board['g_no']
+    o_no = board['o_no']
+    depth = board['depth']
+    cmt_cnt = board['cmt_cnt']
+
     db = conn()
     cursor1 = db.cursor()
     cursor2 = db.cursor()
     cursor3 = db.cursor()
+    cursor4 = db.cursor()
 
-    sql1 = 'delete from board where no = %s'
-    cursor1.execute(sql1, (board_no,))
-
-    sql2 = '''
-        update board 
-        set cmt_cnt = cmt_cnt - 1 
+    sql1 = '''
+        update board
+        set cmt_cnt = cmt_cnt - 1
         where g_no = %s
         and o_no = (select o_no
                     from (select max(o_no) as o_no
-                          from board 
-                          where o_no <= %s
-                          and depth = %s - 1) as tmp);
+                          from board
+                          where o_no < %s
+                          and depth = %s - 1) as tmp)
     '''
-    cursor2.execute(sql2, (g_no, o_no, depth))
+    cursor1.execute(sql1, (g_no, o_no, depth))
+
+    sql2 = 'update board set del = 1 where no = %s'
+    cursor1.execute(sql2, (board_no,))
 
     sql3 = '''
-            update board 
-            set o_no = o_no - 1 
-            where g_no = %s
-            and o_no > %s
-        '''
-    cursor3.execute(sql3, (g_no, o_no))
+        update board
+        set o_no = o_no - (select o_no
+                           from (select count(del) as o_no
+                                 from board
+                                 where g_no = %s
+                                 and o_no <= %s
+                                 and del = 1
+                                 and cmt_cnt = 0) as tmp)
+        where g_no = %s
+        and o_no > %s
+    '''
+    cursor3.execute(sql3, (g_no, o_no, g_no, o_no))
+
+    sql4 = '''
+        delete from board 
+        where del = 1 
+        and cmt_cnt = 0
+        and g_no = %s
+    '''
+    cursor4.execute(sql4, (g_no,))
 
     db.commit()
 
     cursor1.close()
     cursor2.close()
     cursor3.close()
+    cursor4.close()
     db.close()
 
 
