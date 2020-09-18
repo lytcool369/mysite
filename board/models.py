@@ -134,34 +134,47 @@ def replay(board_no, title, content, board, user_no):
     cmt_cnt = board['cmt_cnt']
 
     db = conn()
-    cursor1 = db.cursor()
-    cursor2 = db.cursor()
-    cursor3 = db.cursor()
+    cursor = db.cursor()
 
     sql1 = '''
         update board
         set o_no = o_no + 1
-        where g_no = %s and o_no > %s
+        where g_no = %s
+        and o_no >= if(%s = 0,
+                       %s + 1,
+                       (select o_no 
+                        from (select min(o_no) as o_no
+                              from board
+                              where g_no = %s
+                              and o_no > %s
+                              and depth = %s) as tmp))
     '''
-    cursor1.execute(sql1, (g_no, o_no + cmt_cnt))
+    cursor.execute(sql1, (g_no, cmt_cnt, o_no + 1, g_no, o_no, depth))
 
     sql2 = '''
-            update board
-            set cmt_cnt = cmt_cnt + 1
-            where no = %s 
-        '''
-    cursor2.execute(sql2, (board_no,))
+        update board
+        set cmt_cnt = cmt_cnt + 1
+        where no = %s 
+    '''
+    cursor.execute(sql2, (board_no,))
 
     sql3 = '''
-            insert into board values(null, %s, %s, 1, %s, %s, %s, 0, now(), 0, %s)
-        '''
-    cursor3.execute(sql3, (title, content, g_no, o_no + cmt_cnt + 1, depth + 1, user_no))
+        insert into board values(null, %s, %s, 1, %s, 
+                                 if(%s = 0,
+                                    %s + 1,
+                                    ifnull((select o_no 
+                                         from (select min(o_no) as o_no
+                                               from board
+                                               where g_no = %s
+                                               and o_no > %s
+                                               and depth = %s) as tmp) - 1, %s)),
+                                 %s, 0, now(), 0, %s)
+    '''
+    cursor.execute(sql3, (title, content, g_no, cmt_cnt, o_no, g_no, o_no, depth, (o_no + cmt_cnt + 1), (depth + 1), user_no))
 
     db.commit()
 
-    cursor1.close()
-    cursor2.close()
-    cursor3.close()
+    cursor.close()
     db.close()
 
 
@@ -184,13 +197,9 @@ def delete(board_no, board):
     g_no = board['g_no']
     o_no = board['o_no']
     depth = board['depth']
-    cmt_cnt = board['cmt_cnt']
 
     db = conn()
-    cursor1 = db.cursor()
-    cursor2 = db.cursor()
-    cursor3 = db.cursor()
-    cursor4 = db.cursor()
+    cursor = db.cursor()
 
     sql1 = '''
         update board
@@ -199,13 +208,14 @@ def delete(board_no, board):
         and o_no = (select o_no
                     from (select max(o_no) as o_no
                           from board
-                          where o_no < %s
+                          where g_no = %s 
+                          and o_no < %s
                           and depth = %s - 1) as tmp)
     '''
-    cursor1.execute(sql1, (g_no, o_no, depth))
+    cursor.execute(sql1, (g_no, g_no, o_no, depth))
 
     sql2 = 'update board set del = 1 where no = %s'
-    cursor1.execute(sql2, (board_no,))
+    cursor.execute(sql2, (board_no,))
 
     sql3 = '''
         update board
@@ -219,7 +229,7 @@ def delete(board_no, board):
         where g_no = %s
         and o_no > %s
     '''
-    cursor3.execute(sql3, (g_no, o_no, g_no, o_no))
+    cursor.execute(sql3, (g_no, o_no, g_no, o_no))
 
     sql4 = '''
         delete from board 
@@ -227,14 +237,11 @@ def delete(board_no, board):
         and cmt_cnt = 0
         and g_no = %s
     '''
-    cursor4.execute(sql4, (g_no,))
+    cursor.execute(sql4, (g_no,))
 
     db.commit()
 
-    cursor1.close()
-    cursor2.close()
-    cursor3.close()
-    cursor4.close()
+    cursor.close()
     db.close()
 
 
