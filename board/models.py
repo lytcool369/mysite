@@ -163,14 +163,18 @@ def replay(board_no, title, content, board, user_no):
                                  if(%s = 0,
                                     %s + 1,
                                     ifnull((select o_no 
-                                         from (select min(o_no) as o_no
-                                               from board
-                                               where g_no = %s
-                                               and o_no > %s
-                                               and depth = %s) as tmp) - 1, %s)),
+                                            from (select min(o_no) as o_no
+                                                  from board
+                                                  where g_no = %s
+                                                  and o_no > %s
+                                                  and depth = %s) as tmp) - 1, 
+                                           (select o_no
+                                            from (select max(o_no) as o_no
+                                                  from board
+                                                  where g_no = %s) as tmp) + 1)),
                                  %s, 0, now(), 0, %s)
     '''
-    cursor.execute(sql3, (title, content, g_no, cmt_cnt, o_no, g_no, o_no, depth, (o_no + cmt_cnt + 1), (depth + 1), user_no))
+    cursor.execute(sql3, (title, content, g_no, cmt_cnt, o_no, g_no, o_no, depth, g_no, (depth + 1), user_no))
 
     db.commit()
 

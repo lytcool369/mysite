@@ -22,7 +22,8 @@
 			{% load mathfilters %}
 			{% for board in boardlist %}
 				<tr>
-					<td>{{ boardlist | length | sub:forloop.counter | add:1 }}</td>
+<!--					<td>{{ page | mul:5 | sub:forloop.counter | add:1 }}</td>-->
+					<td>{{ board.no }}</td>
 					<td style="text-align:left; padding-left:{{ board.depth | sub:1 | mul:20 }}px">
 						{% if board.del == 1 %}
 							삭제된 게시물입니다.

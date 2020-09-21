@@ -15,6 +15,17 @@ def index(request):
     return render(request, 'board/index.html', data)
 
 
+def view(request):
+    page = request.GET['page']
+    board_no = request.GET['no']
+
+    result = boardModel.fetchone(board_no)
+    boardModel.hit(board_no)
+    data = {'view': result, 'page': page}
+
+    return render(request, 'board/view.html', data)
+
+
 def writeform(request):
 
     return render(request, 'board/writeform.html')
@@ -51,21 +62,11 @@ def replay(request):
     return HttpResponseRedirect(f'/board?page={page}')
 
 
-def view(request):
-    page = request.GET['page']
-    board_no = request.GET['no']
-
-    result = boardModel.fetchone(board_no)
-    boardModel.hit(board_no)
-    data = {'view': result, 'page': page}
-
-    return render(request, 'board/view.html', data)
-
-
 def modifyform(request):
     board_no = request.GET['no']
+    page = request.GET['page']
     result = boardModel.fetchone(board_no)
-    data = {'mf_view': result}
+    data = {'mf_view': result, 'page': page}
 
     return render(request, 'board/modifyform.html', data)
 

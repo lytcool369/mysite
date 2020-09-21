@@ -26,7 +26,7 @@
 		<div class="bottom">
 			<a href="/board?page={{ page }}">글목록</a>
 			{% if request.session.authuser.no == view.user_no %}
-				<a href="/board/modifyform?no={{ view.board_no }}">글수정</a>
+				<a href="/board/modifyform?no={{ view.board_no }}&page={{ page }}">글수정</a>
 			{% endif %}
 			{% if request.session.authuser != None %}
 				<a href="/board/replayform?no={{ view.board_no }}&page={{ page }}" id="new-book">답글</a>
